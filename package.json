@@ -1,0 +1,28 @@
+{
+  "name": "edgar-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for SEC EDGAR filings and company data",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node test/test.js",
+    "lint": "eslint src/"
+  },
+  "keywords": ["mcp", "sec", "edgar", "filings", "finance"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "node-fetch": "^3.3.2",
+    "fast-xml-parser": "^4.3.2",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
