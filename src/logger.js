@@ -12,13 +12,11 @@ const customFormat = printf(({ level, message, timestamp, ...metadata }) => {
   return msg;
 });
 
-export const logger = winston.createLogger({
-  level: config.logging.level,
-  format: config.logging.format === 'json' 
-    ? combine(timestamp(), json())
-    : combine(timestamp(), colorize(), customFormat),
-  transports: [
-    new winston.transports.Console(),
+const transports = [new winston.transports.Console()];
+
+// Only add file transports in development
+if (process.env.NODE_ENV !== 'production') {
+  transports.push(
     new winston.transports.File({ 
       filename: 'logs/error.log', 
       level: 'error' 
@@ -26,5 +24,13 @@ export const logger = winston.createLogger({
     new winston.transports.File({ 
       filename: 'logs/combined.log' 
     })
-  ]
+  );
+}
+
+export const logger = winston.createLogger({
+  level: config.logging.level,
+  format: config.logging.format === 'json' 
+    ? combine(timestamp(), json())
+    : combine(timestamp(), colorize(), customFormat),
+  transports
 });

@@ -1,9 +1,11 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import express from 'express';
+import cors from 'cors';
 
 import { EdgarService } from './services/edgar-service.js';
 import { mcpTools } from './mcp-tools.js';
@@ -115,13 +117,41 @@ class EdgarMCPServer {
   }
 
   async run() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    
-    logger.info('EDGAR MCP Server started', {
-      name: config.server.name,
-      version: config.server.version,
-      toolCount: mcpTools.length
+    const app = express();
+    const port = config.server.port;
+
+    // Enable CORS for all origins
+    app.use(cors());
+
+    // Health check endpoint
+    app.get('/health', (_req, res) => {
+      res.json({ 
+        status: 'healthy',
+        name: config.server.name,
+        version: config.server.version,
+        toolCount: mcpTools.length
+      });
+    });
+
+    // MCP SSE endpoint
+    app.get('/sse', async (_req, res) => {
+      logger.info('New SSE connection established');
+      
+      const transport = new SSEServerTransport('/sse', res);
+      await this.server.connect(transport);
+    });
+
+    app.listen(port, () => {
+      logger.info('EDGAR MCP Server started', {
+        name: config.server.name,
+        version: config.server.version,
+        toolCount: mcpTools.length,
+        port: port,
+        endpoints: {
+          health: `http://localhost:${port}/health`,
+          sse: `http://localhost:${port}/sse`
+        }
+      });
     });
   }
 }
